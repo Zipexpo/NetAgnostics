@@ -327,7 +327,7 @@ const Provider = ({  children, name }) => {
             dispatch({type: 'LOADING_CHANGED', path: 'dimensions', isLoading: true});
             const {scheme, dimensions} = handleData(_data,{state});
             dispatch({type: 'VALUE_CHANGE', path: `scheme`, value: scheme, isLoading: false});
-            dispatch({type: 'LOADING_CHANGED', path: 'dimensions',value:dimensions, isLoading: true});
+            dispatch({type: 'VALUE_CHANGE', path: 'dimensions',value:dimensions, isLoading: true});
         }
     }, [state['data'].value,state['metricRangeMinMax'],state['userEncoded']]);
 
@@ -370,7 +370,8 @@ const Provider = ({  children, name }) => {
             index: i, range: [Infinity, -Infinity], scale: scaleLinear(),
             order: i,
             angle: (i / dimensionKeys.length) * 2 * Math.PI,
-            enable: true
+            enable: true,
+            suddenRange: [Infinity, -Infinity]
         }));
         const computers = {};
 
@@ -405,8 +406,14 @@ const Provider = ({  children, name }) => {
                         if (d > dimensions[ki].range[1])
                             dimensions[ki].range[1] = d;
                     }
-                    computers[comp][k].sudden[ti] = (+d) - current;
+                    const sudden = (+d) - current;
+                    computers[comp][k].sudden[ti] = sudden;
                     current = +d;
+
+                    if (sudden <  dimensions[ki].suddenRange[0])
+                        dimensions[ki].suddenRange[0] = sudden;
+                    if (sudden >  dimensions[ki].suddenRange[1])
+                        dimensions[ki].suddenRange[1] = sudden;
                 })
             })
         });
@@ -472,7 +479,7 @@ const Provider = ({  children, name }) => {
         const {users} = handleCUJ({computers, jobs}, _data.time_stamp);
         // add new DIm
         handleWorkload(computers, dimensions, dimensionKeys, metricRangeMinMax);
-        const coreUsageIndex = dimensions.length-1;
+
         const tsnedata = {};
         Object.keys(computers).forEach(d => {
             tsnedata[d] = _data.time_stamp.map((t, ti) => {
@@ -492,6 +499,7 @@ const Provider = ({  children, name }) => {
 
         const powerIndex = dimensions.findIndex(d=>d.possibleUnit.type==='power' && d.text.match(/cpu/i));
 
+        // const coreUsageIndex = dimensions.length-1;
         // const {jobTimeline, jobarrdata, userarrdata, _userarrdata, minMaxDataCompJob, minMaxDataUser} = handleDataComputeByJob({
         //     tsnedata,
         //     computers,
@@ -523,6 +531,7 @@ const Provider = ({  children, name }) => {
             text: k,
             index: i,
             range: [Infinity, -Infinity],
+            suddenRange: [Infinity, -Infinity],
             scale: scaleLinear(),
             order: i,
             possibleUnit: {type: null, unit: null, range: [0, 100]},
@@ -551,13 +560,21 @@ const Provider = ({  children, name }) => {
                     if (d > dimT.range[1])
                         dimT.range[1] = d;
                 }
-                computers[comp][k].sudden[ti] = (+d) - current;
+                const sudden = (+d) - current;
+                computers[comp][k].sudden[ti] = sudden;
+                if (sudden < dimT.suddenRange[0])
+                    dimT.suddenRange[0] = sudden;
+                if (sudden > dimT.suddenRange[1])
+                    dimT.suddenRange[1] = sudden;
+
                 current = +d;
             })
         });
 
         dimT.min = dimT.range[0];
         dimT.max = dimT.range[1];
+        dimT.suddenMin = dimT.suddenRange[0];
+        dimT.suddenMax = dimT.suddenRange[1];
         dimT.range = metricRangeMinMax ? [dimT.min, dimT.max] : [0, 100];
         dimT.scale.domain(dimT.range)
 
