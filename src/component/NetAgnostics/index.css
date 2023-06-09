@@ -1,5 +1,16 @@
-svg {
-    transition: all 1s;
+svg * {
+    transition: all 0.5s;
+}
+svg text {
+    font-size: 12px;
+}
+
+.lensing text.timeticks {
+    font-size: 8px;
+}
+
+.lensing .focus text.timeticks {
+    font-size: 12px;
 }
 
 path.layerTopAbove {
@@ -35,4 +46,13 @@ path.layerTopBelow {
     stroke: #000;
     stroke-width:1;
     stroke-opacity:0.75;
+}
+
+path.layerAreaProfile {
+    fill: red;
+    fill-opacity: 0.2;
+}
+
+path.layerLineProfile {
+    fill: none;
 }

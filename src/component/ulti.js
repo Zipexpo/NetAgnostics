@@ -82,8 +82,8 @@ export function getUrl({_start,_end,interval,value,compress}){
 
 const formatMillisecond = d3.timeFormat(".%L"),
     formatSecond = d3.timeFormat("%I:%M:%S"),
-    formatMinute = d3.timeFormat("%I:%M"),
-    formatHour = d3.timeFormat("%I %p"),
+    formatMinute = d3.timeFormat("%H:%M"), //d3.timeFormat("%I:%M")
+    formatHour = d3.timeFormat("%H:%M"), //d3.timeFormat("%I %p")
     formatDay = d3.timeFormat("%a %d"),
     formatWeek = d3.timeFormat("%b %d"),
     formatMonth = d3.timeFormat("%B"),
@@ -98,3 +98,6 @@ export function multiFormat(date) {
                         : d3.timeYear(date) < date ? formatMonth
                             : formatYear)(date);
 }
+
+export const emptyObject = {};
+export const emptyArray = [];

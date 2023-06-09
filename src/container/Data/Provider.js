@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useReducer} from 'react'
+import React, {startTransition, useCallback, useEffect, useReducer} from 'react'
 import Context from './Context'
 import {getRefRange, getUrl, JOB_STATE} from "../../component/ulti";
 import {
@@ -42,6 +42,7 @@ const Provider = ({  children, name }) => {
         data:{},
         dimensions:{},
         scheme:{},
+        nodeFilter:{},
         loadData:{},
         coreLimit:128,
         metricRangeMinMax:false,
@@ -900,6 +901,45 @@ const Provider = ({  children, name }) => {
         return users;
     }
 
+    const getQuery = useCallback((query)=>{
+        startTransition(()=>{
+            const scheme = state.scheme.value;
+            const dimensions = state.dimensions.value;
+            if(scheme&&dimensions) {
+                dispatch({type: 'LOADING_CHANGED', path: 'nodeFilter', isLoading: 'Filtering data'});
+                debugger
+                if (!query || !Object.values(query).find(d => Object.keys(d).length)) {
+                    dispatch({type: 'VALUE_CHANGE', path: 'nodeFilter', value: scheme.computers, isLoading: false});
+                } else {
+                    const byUser = query.byUser;
+                    const nodes = {}
+                    Object.keys(byUser).forEach(u=>{
+                        debugger
+                        scheme.users[u].node.forEach(n=>{
+                            nodes[n] = {};
+                            dimensions.forEach(d=>{
+                                if (scheme.computers[n][d.text]){
+                                    nodes[n][d.text] = scheme.computers[n][d.text].map(()=>null);
+                                    nodes[n][d.text].sudden = scheme.computers[n][d.text].sudden;
+                                }
+                            })
+                            scheme.computers[n].users.forEach((t,i)=>{
+                                if (t.indexOf(u)){
+                                    dimensions.forEach(d=>{
+                                        if (scheme.computers[n][d.text]){
+                                            nodes[n][d.text][i] = scheme.computers[n][d.text][i];
+                                        }
+                                    })
+                                }
+                            })
+                        })
+                    })
+                    dispatch({type: 'VALUE_CHANGE', path: 'nodeFilter', value: nodes, isLoading: false});
+                }
+            }
+        })
+    },[state.scheme,state.dimensions])
+
     const getList = useCallback(
         (path) => {
             return state[path] && state[path].value ? state[path].value : undefined;
@@ -911,6 +951,7 @@ const Provider = ({  children, name }) => {
             isLoading,
             getList,
             queryData,
+            getQuery
         }}>
             {children}
         </Context.Provider>

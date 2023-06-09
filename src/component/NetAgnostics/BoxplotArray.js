@@ -31,11 +31,12 @@ export default function({
             .defined(d => !isNaN(d.maxBelow))
     },[scaleY,scaleX]);
     return <>
-        {data.map(d=><g key={d.timestep} transform={`translate(${scaleX(d.timestep)},0)`}>
+        {data.map(d=><>{(!!d.nodes.length) && <g key={d.timestep} transform={`translate(${scaleX(d.timestep)},0)`}>
             <line className={'boxplotLine'} y1={-scaleY(d.maxAbove)} y2={-scaleY(d.maxBelow)}/>
-            <rect width={boxW} x={-boxW/2} height={scaleY(d.averageAbove)} y={-scaleY(d.averageAbove)} className={'boxplotRectAbove'}/>
-            <rect width={boxW} x={-boxW/2} height={scaleY(-d.averageBelow)} className={'boxplotRectBelow'}/>
-        </g>)}
+            <rect width={boxW} x={-boxW / 2} height={scaleY(d.averageAbove)} y={-scaleY(d.averageAbove)}
+                  className={'boxplotRectAbove'}/>
+            <rect width={boxW} x={-boxW / 2} height={scaleY(-d.averageBelow)} className={'boxplotRectBelow'}/>
+        </g>}</>)}
         <path className={'layerTopAbove'} d={areaTopAbove(data)}/>
         <path className={'layerTopBelow'} d={areaTopBelow(data)}/>
     </>
